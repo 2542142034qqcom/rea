@@ -611,8 +611,11 @@ const removeManagedSkill = async (
       fileSystem,
     );
     results.push(manifest);
-    if (manifest.status === "removed")
-      await removeEmptyManagedDirectories(path, fileSystem);
+    const directories =
+      manifest.status === "removed"
+        ? await removeEmptyManagedDirectories(path, name, fileSystem)
+        : undefined;
+    if (directories !== undefined) results.push(directories);
   }
   const failed = results.find(({ status }) => status === "failed");
   if (failed !== undefined)
@@ -637,20 +640,33 @@ const MANAGED_SKILL_DIRECTORIES = [
 /** Remove managed directories left empty; any remaining user file keeps them. */
 const removeEmptyManagedDirectories = async (
   root: string,
+  name: string,
   fileSystem: UninstallFileSystem,
-): Promise<void> => {
-  if (fileSystem.removeEmptyDirectory === undefined) return;
+): Promise<UninstallItem | undefined> => {
+  if (fileSystem.removeEmptyDirectory === undefined) return undefined;
   for (const directory of [
     ...MANAGED_SKILL_DIRECTORIES.map((relative) => join(root, relative)),
     root,
   ]) {
     try {
       await fileSystem.removeEmptyDirectory(directory);
-    } catch {
-      // A directory that still holds user files, or is already gone, stays as is.
+    } catch (cause: unknown) {
+      // User files, an absent directory, or a non-directory keep it as is.
+      if (!isKeptDirectory(cause))
+        return item(
+          name,
+          "failed",
+          `Managed skill directory could not be removed: ${directory}.`,
+        );
     }
   }
+  return undefined;
 };
+
+const isKeptDirectory = (cause: unknown): boolean =>
+  cause instanceof Error &&
+  "code" in cause &&
+  ["ENOTEMPTY", "EEXIST", "ENOENT", "ENOTDIR"].includes(String(cause.code));
 
 const removeManagedSkillFile = async (
   root: string,
