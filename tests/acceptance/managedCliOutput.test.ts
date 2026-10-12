@@ -321,6 +321,7 @@ cliTest(
     for (const command of [
       "inspect-managed-artifact",
       "inspect-managed-members",
+      "inspect-managed-native-boundaries",
     ]) {
       const result = await cli.run({ arguments: [command, path, "--json"] });
       expect(result.exitCode).toBe(1);
