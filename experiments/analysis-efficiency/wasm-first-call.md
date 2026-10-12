@@ -136,3 +136,14 @@ events; this is not credited as a performance trial.
 Detailed JSON, transcripts, target bytes, profiles and acquisition receipts
 stay outside Git. Source inputs, scripts and this concise measured scope are
 reviewable in the repository.
+
+## Main integration checkpoint
+
+Prerequisite #2122 is merged at `58fb372071e56da9c5df0e37593ee3f0da6b64bc`.
+The follow-up is rebased directly onto latest fetched main. Intervening changes
+outside the prerequisite concern CLI/logging/CI planning rather than WASM
+production/delivery. Seven focused WASM MCP workflows and one fresh real-WABT
+SQLite public-SDK request pass against the new build: selected facts and original
+source ID match the pinned candidate, summary uses two calls with no tool error.
+Only the relevant integration checks and required pre-push gate are repeated;
+earlier measurements retain their original runtimes, not the new main label.
